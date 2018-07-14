@@ -1,0 +1,431 @@
+\documentclass[a4paper,10pt,fleqn]{scrartcl}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\usepackage{textcomp}
+\geometry{letterpaper}                 
+%\geometry{landscape}                		% Activate for rotated page geometry
+\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}						
+\usepackage[all,error]{onlyamsmath}		% Error on deprecated math commands like $$ $$.
+\usepackage[strict=true]{csquotes}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage{amssymb}
+\usepackage{listings}
+\lstset{frame=single,framerule=0pt,language={C},showstringspaces=false,numbers=left,columns=fullflexible}
+\usepackage{2111defs}
+\usepackage{2111defs2}
+\usepackage{amsmath}
+\usepackage[toc,page]{appendix}
+
+\allowdisplaybreaks
+
+\newcommand{\res}{\mathsf{res}}
+\newcommand{\Prime}{\mathsf{prime}}
+\newcommand{\setA}{\mathbb{A}}
+\newcommand{\assn}[1]{{\color{red}\left\{#1\right\}}}
+\newcommand{\nullchar}{'\backslash 0'}
+\newcommand{\substDD}[4]{\subst{#1\colon #2\mapsto(#1[#2]\colon #3\mapsto#4)}{#1}}
+\newcommand{\PRIME}[1]{\All{i\in 2..\sqrt{#1}}{ i\nmid #1}}
+\newcommand{\RESS}[1]{#1= \sum_{i = 0}^{c(#1)} (S_i 10^{c(#1)-i}) \And \Exi{r\in \posnat}{r = \sum_{i = 0}^{c(#1)} (S_i 10^{i}) \And \Prime(r) \And r\ne x }}
+\newcommand{\RES}[1]{#1 = \sum_{i = 0}^{c(#1)} (S_i 10^{c(#1)-i}) \And r = \sum_{i = 0}^{c(#1)} (S_i 10^{i}) \And \Prime(r)}
+
+\title{Assignment 1}
+\author {
+	z5163480 Nabil Shaikh \\
+	\and
+	z5162498 Bailey Ivancic
+}
+%\date{}							% Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+
+\section{Task 1 : Specify a function emirp}
+Define a procedure called emirp that given a natural number n$>$0 it returns the $n^{th}$ emirp. 
+
+The precondition can be as simple as n needing to be greater than 0. 
+
+Before specifying the postcondition, define what it means to be prime. $x\in \posnat$ is prime iff
+\begin{gather*}
+	\Prime(x) \triangleq \PRIME{x}
+\end{gather*}
+
+We use the folliwng mathematical theorem when checking primality in the range of (2..$\sqrt{x}$): \\
+If a number n is not prime, it can be factored into two factors, called a and b; \\ \\
+	n = a * b \\ \\
+If both a and b are greater than $\sqrt{n}$, The product a * b would be greater than n. Therefore, at least one of these factors must be less than $\sqrt{n}$, and to check if it is prime we only need to find one of the factors. Therefore, we check for primality up to sqrt(n). Similarly, there is no need to check factors 0 or 1, and so we start testing at 2. \\
+
+Next we define what is means for the reverse of the number $x$ to be prime. Where $r$ is the reverse of $x$. 
+\begin{gather*}
+	\res(x) \triangleq \RES{x}
+\end{gather*}
+Where $c(x) = \floor{log_{10} x}$ and $S$ is a sequence containing the digits of $x$ from left to right. This states that there $x$ is made up of digits in $S$ and that there exists an $r$ such that $r$ is made up of reversing the digit order in the sequence S. Furthermore, $r$ is prime and $r\ne n$.\\
+
+Now, define what it means for $x$ to be the $n^{th}$ emirp.
+\begin{gather*}
+	 \Prime(x) \And \res(x) \And r\ne x \And n=\sum_{\forall j \in \setA}^{} (1)
+\end{gather*}
+Where $\setA$ is defined globally as
+\begin{gather*}
+	\setA = \{y \mid 0<y\le x \And \Prime(y) \And \res(y) \And r\ne y\}
+\end{gather*}
+finally, we get 
+\begin{gather*}
+	\PROC \,emirp(\VALUE \, n: \posnat, \RESULT \, x: \posnat)\, \centerdot \\
+	\qquad \VAR \, x, r : \nat \\ \qquad \nt{x\colon [n>0, \, \Prime(x) \And \res(x) \And r\ne x \And n=\sum_{\forall j \in \setA}^{} (1)]}{(0)}\\
+\end{gather*}
+\newpage
+\section{Task 2 : Refinement Calculus}
+\begin{align*}
+	\lrefstep{(0)}{i-loc2x2}{\VAR \, x \Ass 1; \\ &\VAR \, r\Ass0; \\}
+	&\nt{x, r\colon [n>0 \And r=0 \And x=1, \, \Prime(x) \And \res(x) \And r\ne x \And n=\sum_{\forall j \in \setA}^{} (1)]}{(1)}
+\end{align*}
+Define an invariant $L \triangleq \Prime(x) \And \res(x) \And r\ne x \And k=\sum_{\forall j \in \setA}^{}(1)$ to then use during a sequential composition step.
+\begin{gather*}
+	L \triangleq 
+	\left( 
+	\begin{array}{l}
+		\PRIME{x} \And x=\sum_{i = 0}^{c(x)} (S_i 10^{c(x)-i}) \\
+		\And r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \And \PRIME{r} \\
+		\And r\ne x \And k=\sum_{\forall j \in \setA}^{}(1)
+	\end{array}
+	\right)
+\end{gather*}
+\begin{align*}
+	\lrefstep{(1)}{seq and definition of L $\EQUIV$post(1)}{\nt{x, r, k \colon [n>0 \And r=0 \And x=1, L ]}{(2)}}\\
+	&\nt{x, r, k[L, \, k = n \And L]}{(3)} \\
+	\lrefstep{(2)}{c-frame}{k \colon [n>0 \And r=0 \And x=1, L\subst{x}{x_0} \subst{r}{r_0} ]}\\
+	\refstep{ass}{k\Ass 0;}
+\end{align*}
+\subsection{Proof of (2) $\isrefinedby$ $k \Ass 0$} 
+$k=k_0 \And pre(2) \Implies post(2)\subst{0}{k}$ as quoted by the assignment rules\\
+\begin{align*}
+	&k=k_0 \And n>0 \And r=0 \And x=1 \\
+\justification[\Implies]{Vacuously true} \\
+	&\PRIME{x} \And x=\sum_{i = 0}^{c(x)} (S_i 10^{c(x)-i}) \And r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \And \PRIME{r} \\
+	&\And r\ne x \And 0=\sum_{\forall j \in \setA}^{}(1)\\
+\justification[\EQUIV]{Definition of L} \\
+	&L\subst{x}{x_0} \subst{r}{r_0} \subst{0}{k} \\
+\end{align*}
+Since k is the counter for the number of emirps, k is assigned to 0 - under the consideration of $r=0 \And x=1$ the post(2) is then vacuously true. \\ \\
+Now, use the negated guard in (3) to initialise a while loop. The negation of $k=n$ is not $k<n$ but since $k$ will only ever be incremented by at most 1 each loop, it is safe to deduce that $k$ will never exceed $n$. 
+\begin{align*}
+	\lrefstep{(3)}{while loop}{\WHILE \, k<n \, \DO \\ }
+	&\qquad \nt{x, r, k\colon [L \And k< n , \, L]}{(4)} \\
+	&\OD
+\end{align*}
+Lets begin the loop body by defining a sequential composition step. 
+\begin{align*}
+	\lrefstep{(4)}{seq}{\nt{x, r, k\colon[L\And k<n, L\subst{k+1}{k}]}{(5)}}\\
+	&\nt{x, r, k\colon [L\subst{k+1}{k}, \, L]}{(6)}
+\end{align*}
+Increment k.
+\begin{align*}
+	\lrefstep{(6)}{ass and C-frame}{k:=k+1}\\
+\end{align*}
+Refine step (5) into another sequential composition. Firstly, define an invariant $I$ such that. \\ 
+\begin{align*}
+	I \triangleq 
+	\left( 
+	\begin{array}{l}
+		\PRIME{x} \And x=\sum_{i = 0}^{c(x)} (S_i 10^{c(x)-i}) \\
+		\And r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \And \PRIME{r} \\
+		\And r\ne x \And k+1=\sum_{\forall j \in \setA}^{}(1)
+	\end{array}
+	\right)
+\end{align*}
+Where the set $\setA$ is :  $\setA = \{y \mid 0<y\le x \And \Prime(y) \And \res(y)\And r\ne y\}$\\
+\begin{align*}
+	\lrefstep{(5)}{seq and i-loc}{\VAR \, e : \bool \cdot{} \nt{x, r, e\colon[L\And k<n, e \EQUIV I ]}{(7)}} \\
+	&\nt{x, r, e\colon[e \EQUIV I, L\subst{k+1}{k}]}{(8)}
+\end{align*}
+Step (7) is refined into a assignment statement.  
+\begin{align*}
+	\lrefstep{(7)}{C-frame}{e\colon[L\And k<n, e\EQUIV I]}\\
+	\refstep{ass}{\VAR \, e\Ass \False;}
+\end{align*}
+\subsection{Proof of (7) $\isrefinedby$ $e \Ass \False$}
+$e=e_0 \And pre(7) \Implies post(7)\subst{\False}{e}$ as quoted by the assignment rules\\
+\begin{align*}
+	&e=e_0 \And L\And k<n\\
+\justification[\EQUIV]{Definition of L} \\
+	&e=e_0 \And k<n \And \PRIME{x} \And x=\sum_{i = 0}^{c(x)} (S_i 10^{c(x)-i}) \\
+	&\And r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \And \PRIME{r} \\
+	&\And r\ne x \And k=\sum_{\forall j \in \setA}^{}(1)\\
+\justification[\Implies]{Since $x$ did not change} \\
+	&k+1\ne \sum_{\forall j \in \setA}^{}(1)\\
+\justification[\Implies]{logical implication of or} \\
+	&\NOT \PRIME{x} \OR \NOT x=\sum_{i = 0}^{c(x)} (S_i 10^{c(x)-i}) \\
+	&\OR \NOT r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \OR \NOT \PRIME{r} \\
+	&\OR \NOT r\ne x \OR \NOT k+1=\sum_{\forall j \in \setA}^{}(1) \\
+\justification[\EQUIV]{Definition of I} \\
+	&\Not I\\
+\EQUIV \\
+	&(e\EQUIV I)\subst \False e
+\end{align*}
+Discharge the conjuncts on the LHS separately.The first two conjuncts have no effect on the RHS. All other conjuncts except the last conjunct are all present within the RHS. The last conjunct on the LHS conveys that $k$ is the sum of all the emirps up to $x$, yet the corresponding statement on the RHS depicts that $k+1$ is equal to this sum. Since $x$ was not in the frame of spec(7), $x$ did not change. Therefore, the statement on the RHS is false. This supports the assignment of $e=\False$ since $e\EQUIV I$.
+\\ \\
+Now create a sequential composition to set up a while loop. 
+\begin{align*}
+	\lrefstep{(8)}{S-post}{\nt{x, r, e\colon[e \EQUIV I , e \EQUIV I \And e=\True]}{(9)}} \\
+\end{align*}
+\begin{align*}
+	\lrefstep{(9)}{while loop}{\WHILE \, e=\False \, \DO \\ }
+	&\qquad \nt{x, r, e\colon [e\EQUIV I\And e=\False , \, e\EQUIV I]}{(10)} \\
+	&\OD
+\end{align*}
+\label{brevity1}
+NOTE 1: exclude the fact that $k=\sum_{\forall j \in \setA}^{}(1)$ for steps through (10) to (17) for the purpose of brevity. 
+\subsection{Proof of (8) $\isrefinedby$ $x, r, e\colon[e \EQUIV I , e \EQUIV I \And e=\True]$}
+$e \EQUIV I \And e=\True \Implies L\subst{k+1}{k}$ as quoted by the Stronger postcondition rules\\
+\begin{align*}
+	&e \EQUIV I \And e=\True \\
+\EQUIV \\
+	& I \\
+\justification[\EQUIV]{Definition of I} \\
+	& \PRIME{x} \And \RES{x} \And r\ne x \\ & \And k+1=\sum_{\forall j \in \setA}^{}(1) \\
+\justification[\EQUIV]{substitution}\\
+	&  L\subst{k+1}{k} \\
+\end{align*}
+Now create a sequential composition step to find the next prime after $x$, assign a value to $r$ and test if it is prime.
+\label{x_0}
+\begin{align*}
+	\lrefstep{(10)}{seqx4}{\CON \text{ c} \cdot{} \nt{x, r, e:[\NOT I \And c=x_0,  \, x>c \And \Prime(x) \And \All{k\in \nat}{c<k<x \Implies \NOT \Prime(k)} \And e=\False] }{(11)}}\\
+	&\nt{x, r, e:[\text{ post(11) }, \, x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}) \And r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \And \Prime(x)\And e=\False]}{(12)}\\
+	&\VAR \text{ t}: \bool \cdot{} \nt{x, r, e, t:[\text{ post(12)}, t\EQUIV \Prime(r) \And e=\False \And \text{ pre(13)}]}{(13)}\\
+	&\nt{x, r, e, t:[\text{ post(13)}, e\EQUIV I]}{(14)}\\
+\end{align*}
+Assign a constant $c$ to freeze the previous value of $x$, in order to use the gmp function gmpFindNextPrime.
+\begin{align*}
+	\lrefstep{(11)}{W-pre, C-frame and i-con}{ \CON \text{ c } \cdot{} x: [c=x_0,  \, x>c \And \Prime(x) \And \All{k\in \nat}{c<k<x \Implies \NOT \Prime(k) \And e=\False}]}\\
+	\refstep{Definition of function gmpFindNextPrime[$\ref{appendix}$]}{\PROC \text{ gmpFindNextPrime($\VALUE$ $x$: $\nat $)}] }\\
+	&\qquad \CON \text{ c } \cdot{} x:[c=x_0, \, x>c \And \Prime(x) \And \All{k\in \nat}{c<k<x \Implies \NOT \Prime(k)} ]
+\end{align*}
+The post(11) has the statement $e=\False$. However, e is no longer in the frame, therefore this fact will be preserved throughout the proc call. \\ \\
+Introduce a sequence $S$, defined in the spec, to define the reverse of the number $x$ and assign its value to $r$.
+\begin{align*}
+	\lrefstep{(12)}{W-pre, C-frame and i-con}{\CON \text{ S: $10^{*}$}\cdot{} r:[x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}) ,  \, x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}) \And r = \sum_{i = 0}^{c(x)} (S_i 10^{i})  \And e=\False \And \Prime(x)]} \\
+	\refstep{Definition of proc reversen[$\ref{appendix}$]}{\PROC \text{ reversen($\VALUE$ $x$: $\nat $, $\RESULT$ $r$: $\nat$)}} \\
+	&\qquad \CON \text{ S: $10^{*}$}\cdot{} r:[x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}) ,  \, r = \sum_{i = 0}^{c(x)} (S_i 10^{i})]
+\end{align*}
+The post(13) on the LHS includes $\Prime(x)\And e=\False \And x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}) $. However, this is irrelevant since $x$ and $e$ is excluded from the frame and will never change. Therefore, this statement is preserved. \\ \\
+Introduce a boolean variable $t$ to hold the result of gmpPrimeTest, which will asses whether the reverse of $x$, $r$, is prime or not.
+\begin{align*}
+	\lrefstep{(13)}{W-pre, C-frame and i-loc}{\VAR \text{ t: $\bool$}\cdot{} t:[\True,  \, t\EQUIV \Prime(r) \And x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}) \And r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \And e=\False \And \Prime(x)]} \\
+	\refstep{Definition of function gmpPrimeTest[$\ref{appendix}$]}{\PROC \text{ gmpPrimeTest($\VALUE$ $r$: $\nat $, $\RESULT$ $t$: $\bool$)}} \\
+	&\qquad \VAR \text{ t: $\bool$}\cdot{}  t:[\True,  \, t\EQUIV \Prime(r)]
+\end{align*}
+The post(14) on the LHS includes $x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}) \And r = \sum_{i = 0}^{c(x)} (S_i 10^{i})  \And e=\False \And \Prime(x)$. However, this is irrelevant since $x$ and $r$ and $e$ are excluded from the frame and will never change. Therefore, these statements are preserved. \\ \\
+Introduce a if statement to check if $r$ is prime.
+\begin{align*}
+	\lrefstep{(14)}{if condition and C-frame for $x$, $r$, $t$}{\IF \, \text{t=$\True$} \, \THEN} \\
+	& \qquad \nt{e:[x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}) \And r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \And \Prime(r) \And \Prime(x) \And e=\False, e\EQUIV I]}{(15)} \\
+	&\ELSE \\ 
+	&\qquad \nt{e:[x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}) \And r = \sum_{i = 0}^{c(x)} (S_i 10^{i})  \And \NOT \Prime(r) \And \Prime(x) \And e=\False, e\EQUIV I]}{(16)} \\
+	&\FI \\
+\end{align*}
+\begin{align*}
+	\lrefstep{(16)}{W-pre and C-frame and e-frame}{e:[x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}) \And r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \And \NOT \Prime(r) \And \Prime(x) \And e=\False, e\EQUIV I ]} \\
+	\refstep{skip}{SKIP}
+\end{align*}
+Since $e$ was not changed from it's original value, step (16) can be refined into SKIP.\\
+\subsection{Proof of (16) $\isrefinedby$ $SKIP$}
+$pre \Implies post \subst{e}{e_0}$ as quoted by the Skip rules \\
+\begin{align*}
+	&x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}) \And r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \And \NOT \Prime(r) \And \Prime(x) \And e=\False \\
+\justification[\Implies]{definition of $\Prime(r)$} \\
+	& \NOT \PRIME{r} \And e=\False \\
+\justification[\Implies]{logical implication of or} \\
+	&\NOT \PRIME{x} \OR \NOT x=\sum_{i = 0}^{c(x)} (S_i 10^{c(x)-i}) \\
+	&\OR \NOT r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \OR \NOT \PRIME{r} \\
+	&\OR \NOT r\ne x \OR \NOT k+1=\sum_{\forall j \in \setA}^{}(1) \And e=\False \\
+\justification[\EQUIV]{Definition of I} \\
+	&e\EQUIV I \And e=\False \\
+\justification[\Implies]{Definition of I} \\
+	&e\EQUIV I 
+\end{align*}
+\begin{align*}
+	\lrefstep{(15)}{if condition}{\IF \text{ $r\ne x$ } \And \, \THEN} \\
+	&\qquad \nt{e: [\text{pre(15)}\And r\ne x, \, e\EQUIV I]}{(17)}\\
+	&\ELSE\\
+	&\qquad \nt{e: [\text{pre(15)} \And r=x, \, e\EQUIV I]}{(18)}\\
+	&\FI \\
+\end{align*}
+Only logical step is that $e$ must be assigned to \True.
+\begin{align*}
+	\lrefstep{(17)}{ass}{e:=\True} \\
+\end{align*}
+\subsection{Proof of (17) $\isrefinedby$ $e:=\True$}
+$w=w_0\And pre \Implies post \subst{\True}{e}$ as quoted by the Assignment rules \\
+\begin{align*}
+	&x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}) \And r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \And \Prime(r) \And \Prime(x) \And e=\False \And r\ne x \\
+\justification[\Implies]{exclude the fact that e=false since this isn't relevant} \\
+	& x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}) \And r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \And \Prime(r) \And \Prime(x) \And r\ne x \\
+\justification[\Implies]{NOTE 1 : statement of brevity [page $\pageref{brevity1}$] and the fact that $x>c$ from step (11) on page $\pageref{x_0}$} \\
+	&x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}) \And r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \And \Prime(r) \\
+	&\And \Prime(x) \And r\ne x \And k=\sum_{\forall j \in \setA}^{}(1) \And x>c\\ 
+\justification[\Implies]{Definition of I} \\
+	&\True \EQUIV (x=\sum_{i = 0}^{c(x)} (S_i 10^{c(x)-i}) \And r = \sum_{i = 0}^{c(x)} (S_i 10^{i}) \\
+	&\And \Prime(x) \And  \Prime(r) \\
+	&\And r\ne x \And k+1=\sum_{\forall j \in \setA}^{}(1)) \\
+\justification[\EQUIV]{Definition of I} \\
+	&(e\EQUIV I)\subst{\True}{e}
+\end{align*}
+Discharge all conjunct on the LHS separately. 1-5 conjuncts on the LHS are all present in the RHS. To better understand what we are looking at we expand the 6 and the 7 conjunct on the LHS.
+\begin{gather*}
+	k=\sum_{\forall j \in \setA}^{}(1) \And x>c \And \Prime(x)\\
+	\text{where } \setA = \{y \mid 0<y\le c \And \Prime(y) \And \res(y) \And r\ne y\}
+\end{gather*}
+This is justified since k has not changed from it's state on page $\pageref{brevity1}$ and x and c have not been change since page $\pageref{x_0}$\\
+Now expand the RHS
+\begin{gather*}
+	k+1=\sum_{\forall j \in \setA}^{}(1) \And \Prime(x)\\
+	\text{where } \setA = \{y \mid 0<y\le x \And \Prime(y) \And \res(y) \And r\ne y\}
+\end{gather*}
+On the LHS $k$ is equal to the sum of all the emirps up to the old value of $x$, which is the value $c$,  and on the RHS $k+1$ is equal to the sum of all the emirps up to the new value of $x$. Therefore clearly, LHS $\Implies$ RHS.
+\begin{align*}
+	\lrefstep{(18)}{C-frame and ass}{e\Ass \False} \\
+	\refstep{skip}{SKIP}
+\end{align*}
+Proof similar to refinement step (16) 
+
+The full program here: 
+\begin{gather*}
+\VAR \, x\Ass 1;\\
+\VAR \, r\Ass 0;\\
+\VAR \, k\Ass 0;\\
+\WHILE \, k<n \, \DO \\
+\qquad \VAR \, e \Ass \False; \\
+\qquad \WHILE \, e = \False \, \DO \\
+\qquad \qquad  x\Ass \text{gmpFindNextPrime($x$)}; \\
+\qquad \qquad \text{reversen}(x, r); \\
+\qquad \qquad \VAR \, t \Ass \text{gmpPrimeTest(r)} \\
+\qquad \qquad \IF \text{ $t=\True$ } \THEN \\
+\qquad \qquad \qquad \IF \text{ $r\ne x$ } \THEN \\ 
+\qquad \qquad \qquad  \qquad e \Ass \True; \\
+\qquad \qquad \qquad \FI \\
+\qquad \qquad \FI \\
+\qquad \OD \\
+\qquad k\Ass k+1; \\
+\OD 
+\end{gather*}\\ 
+
+With the C implementation following: \\
+\begin{lstlisting}
+void emirp(unsigned long n, mpz_t x)
+{
+	//Declare variables
+	mpz_t k;
+	mpz_t r;
+
+	//Initialise variables (Both will be set to 0)
+	mpz_init(k);
+	mpz_init(r);
+
+	//Set values
+	mpz_set_ui(x, 1);
+
+	while (mpz_cmp_ui(k, n) < 0) //GMP comparison function, returns negative if op1 >= op2
+	{
+		bool e = false;
+		while (e == false)
+		{
+			// Uses temp to hold previous value of x
+			mpz_t temp;
+			mpz_init(temp);
+			mpz_set(temp, x);
+
+			mpz_nextprime(x, temp);
+			reversen(x, r); //r now contains reversed order of x's digits
+
+			int t = mpz_probab_prime_p(r, 30); //gmp primality testing function
+			if (t != 0) // t == TRUE
+			{
+				if (mpz_cmp(x, r)) //Guard against palindromic primes
+				{
+					e = true;
+				}
+			}
+		}
+		mpz_add_ui(k, k, 1);
+	}
+}
+\end{lstlisting}
+
+Limitations of the current program implementation: \\
+Since we are using the GMP supplied primality testing function, an element of error is present within the program. This function provides three sets out return values; definitely not prime, definitely prime and could be prime. In our implementation, we have interpreted any return value apart form definitely not prime as prime, which means there is a possibility that a composite number could be interpreted as a prime. This chance is highly unlikely however, as we used a fairly high constant within the function, resulting in better accuracy. Time and resources are also a limiting factor, as calculating emirps in excess of 100,000 gets extremely costly in terms of both, but this should be expected with any prime searching function.
+
+Justification of choice of representation: \\
+Our choice to use the GMP functions was done in order to make a more universal, robust program. We wanted to avoid the limitation of unsigned long sizes for the numbers, and instead used the mpz-t data structure provided by GMP in order to allow for bigger numbers. We also used the gmp functions for prime comparison and prime retrieval, as these functions are fast, robust and well documented. This is demonstrated from the times we obtained from our inputs, with no large time or resource penalty until reaching in excess of the 50,000th emirp. Keeping in mind that any prime retrieval program will be large in terms of complexity, we believe we have done well in building a solution that is efficient and practical
+\newpage
+\section{Appendix}
+\label{appendix}
+
+Use of the gmp function $<mpz_nextprime()>$ for derivations in the proof. Assumed the spec of the function conforms to this spec.
+\begin{align*}
+&\FUNC \text{ gmpFindNextPrime }(\VALUE \text{ $x$}: \nat) \\
+	&\qquad \CON \text{ $c$}: \nat \cdot{} x : [c=x_0, \, x>c \And \Prime(x) \And \All{k\in \nat}{c<k<x \Implies \NOT \Prime(k)}] \\
+	&\qquad \RETURN \text{ $x$};
+\end{align*}
+
+Use of the proc reversen given to us by Kai in assignment 1 spec.
+\begin{align*}
+&\PROC \text{ reversen }(\VALUE \text{ $x$ }: \nat, \RESULT \text{ $r: \nat$ }) \\
+	&\qquad \CON \, S:[10]^{*} r : [x=\sum_{i=0}^{c(x)} (S_i 10^{c(x)-1}), \, r = \sum_{i = 0}^{c(x)} (S_i 10^{i})]
+\end{align*}
+
+Use of the gmp function $<mpz_probab_prime_p>$ for derivations in the proof. Assumed the spec of the function conforms to this spec.
+\begin{align*}
+&\FUNC \text{ gmpPrimeTest }(\VALUE \text{ $x$ }: \nat) \\
+	&\qquad \VAR \text{ $p$}: \bool \cdot{} p : [\True, \, p\EQUIV \Prime(x)] \\
+	& \qquad \RETURN \text{ $p$};
+\end{align*}
+
+Timing data was collated using the function to find the n'th emirp, with n from 10-800,000. This is included below:
+\begin{lstlisting}
+// user times recorded from Unix "time" command
+// n size | time recorded (seconds)
+
+// Emirps from 10 - 9000 are verified to be correct
+10      0.000
+100     0.000
+500     0.000
+1000    0.012
+2000    0.024
+5000    0.080
+9000    0.212
+
+// Emirps from 50 000 - 800 000 likely to be correct, but are not verified
+50 000      13.156
+100 000     22.404
+500 000     3m 21.360s
+800 000     4m 18.584s
+\end{lstlisting}
+\newpage
+The following funciton was used to test the function's output. The output was sent to file "output2.txt", where it was then compared with a list of verified emirps. This was verified correct up to the 9000th emirp, where further testing was stopped due to time constraints, but further output is implied true. 
+\begin{lstlisting}
+#include <stdio.h>
+#include <stdbool.h>
+#include <gmp.h>
+#include "reverse.h"
+
+void testEmirps()
+{
+	int i = 1;
+
+	FILE *fp = fopen("output2.txt", "w");
+	while (i < 10001)
+	{
+		//printf("yo\n");
+		mpz_t temp;
+		mpz_init(temp);
+		emirp(i, temp);
+		unsigned long temp2 = mpz_get_ui(temp);
+		fprintf(fp, "%lu\n", temp2);
+		i++;
+		printf("%d\n", i);
+	}
+	fclose(fp);
+}
+
+\end{lstlisting}
+\end{document}

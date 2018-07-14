@@ -1,0 +1,307 @@
+\documentclass[a4paper,10pt,fleqn]{scrartcl}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\usepackage{textcomp}
+\geometry{letterpaper}                 
+%\geometry{landscape}                		% Activate for rotated page geometry
+\usepackage{graphicx}						
+\usepackage[all,error]{onlyamsmath}		% Error on deprecated math commands like $$ $$.
+\usepackage[strict=true]{csquotes}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage{amssymb}
+\usepackage{listings}
+\lstset{frame=single,framerule=0pt,language={C},showstringspaces=false,numbers=left,columns=fullflexible}
+\usepackage{2111defs}
+\usepackage{2111defs2}
+\usepackage{amsmath}
+\usepackage[toc,page]{appendix}
+
+\allowdisplaybreaks
+
+\newcommand{\res}{\pPkey{res}}
+\newcommand{\seq}{\pPkey{seq}}
+\newcommand{\Module}{\pPkey{module}}
+\newcommand{\End}{\pPkey{end}}
+\newcommand{\Prime}{\mathsf{prime}}
+\newcommand{\setA}{\mathbb{A}}
+\newcommand{\assn}[1]{{\color{red}\left\{#1\right\}}}
+\newcommand{\nullchar}{'\backslash 0'}
+\newcommand{\substDD}[4]{\subst{#1\colon #2\mapsto(#1[#2]\colon #3\mapsto#4)}{#1}}
+\newcommand{\PRIME}[1]{\All{i\in 2..\sqrt{#1}}{ i\nmid #1}}
+\newcommand{\RESS}[1]{#1= \sum_{i = 0}^{c(#1)} (S_i 10^{c(#1)-i}) \And \Exi{r\in \posnat}{r = \sum_{i = 0}^{c(#1)} (S_i 10^{i}) \And \Prime(r) \And r\ne x }}
+\newcommand{\RES}[1]{#1 = \sum_{i = 0}^{c(#1)} (S_i 10^{c(#1)-i}) \And r = \sum_{i = 0}^{c(#1)} (S_i 10^{i}) \And \Prime(r)}
+\newcommand{\DICT}{\pPkey{DICT}}
+
+\title{Assignment 3 - Trie Harder}
+\author {
+	z5163480 Nabil Shaikh \\
+	\and
+	z5162498 Bailey Ivancic
+}
+
+\begin{document}
+\maketitle
+
+\section{Task 1 : Intro }
+Define a dictionary as a finite set of words, where, for simplicity, a word is a finite sequence of letters over $L$ = \{'a', . . . , 'z'\}. Consider a syntactic stack data type $\DICT$ and its representation variable is a dictionary set W. The data type comprises of an initialization predicate $init^{W}  \triangleq W=\{ \}$.The dictionary has the following procedures:
+
+\begin{itemize}
+  \item adding a given word to the set. (addWord(w))
+  \item checking whether a given word is contained in the set. (checkWord(w)) 
+  \item deleting a given word. (delWord(w))
+\end{itemize}
+
+\section{Task2 : Abstract Dictionary }
+Consider a syntactic set data type $\DICT$. Its representation variable is a dictionary set W. The data type comprises of an initialization predicate $init^{W}  \triangleq W=\{ \}$. The dictionary has the following procedures:
+\begin{gather*}
+    \FUNC \text{ checkWord(W, } \VALUE \text{ $w$}) \\
+    \qquad \VALUE \text{ $b$} \cdot{} b:[\True, b=(w\in W)] \\
+    \qquad \RETURN \text{ $b$}
+\end{gather*}
+\begin{gather*}
+    \PROC \text{ addWord(W, } \VALUE \text{ $w$}) \\ 
+    \qquad W:[\True, W=W_0 \cup w]
+\end{gather*}
+\begin{gather*}
+    \PROC \text{ delWord(W, } \VALUE \text{ w}) \\
+    \qquad W:[\True, W=W_0 \setminus \{ w \}]
+\end{gather*}
+
+\section{Task 3 : Refinement of $\DICT$ into $\DICT^{A}$}
+Formally, we write $v\leq w$ if word v$\in L^{*}$ is a prefix of $w\in L^{*}$, i.e., $\Exi{v \prime \in L^{*}}{vv\prime =w}$. We write B for \{0, 1\} where 0 represents 'false' and 1 'true'. A trie domain is a prefix- closed finite subset of $L^{*}$. A trie is a function from a trie domain to Booleans. Given a trie t we write dom(t) for its trie domain. Let T be the set of all tries.
+\\ \\
+$\mathbf{Example \, 1}$ D = \{$\epsilon$,'a', 'a''d', 'a''d'd'\} is a trie domain and t = \{$\epsilon$ $\mapsto$ 0, 'a'$\mapsto$ 0,  'a''d' $\mapsto$ 0, 'a''d''d' $\mapsto 1\}$ is a trie with dom t = D. It represents the set $\{$'a', 'a''d', 'a''d''d'$\}$ of words. Note $\epsilon$ represents a universal collection of all other combinations of L$^*$ and this maps to 0, such that t("notInTrie") = 0. \\ \\
+Define a mapping function from a concrete data type to an abstract data type. Such that any Trie maps to a valid abstract set W. \\
+\[ 
+f(t) =
+ \begin{cases} 
+      \{ \}         & \text{if } \All{x\in \text{dom } t}{t(x) = \False} \\
+      \{ x \cup f(t: x\mapsto \False) \}    & \text{if } \Exi{x\in \text{dom } t}{t(x) = \True \And x\notin W_0}\\
+   \end{cases}
+\]
+\\ \\
+let the constructed data type $\seq$ $w \Ass "word"$ be defined as an ordered sequence of characters, such that w[0] = 'w'. let the addition of two sequences, seq1 + seq2, represent the concatenation of those strings and $|seq|$ represent the length/size of the sequence seq. 
+\\ \\ 
+let the constructed data type t $: \seq \, CHAR \mapsto \bool$ be a function that maps from a sequence of characters to a boolean value. \\ \\
+let t[w] represent the boolean value from w .ie w $\mapsto \True$. Further define that t[w:= $\False$] either adds the mapping $\{w\mapsto \False\}$ or changes the previous value of t[w] = $\True$ to t[w] = $\False$. This defines the building blocks of our trie. 
+\\ \\
+Referencing from programming from specification by Carroll Morgan, $\seq$ CHAR is a sequence of characters and the declaration of a function are both inspired from the chapter constructed types.
+\begin{gather*}
+\Module \text{ DICT$^A$}\\ \\
+\qquad \PROC \text{ init$^A()$}\\
+\qquad \qquad \VAR \text{ $t$} : \seq \text{ CHAR} \mapsto \bool \\
+\qquad \qquad \text{t := } \{ \epsilon \mapsto \False \} \\ \\
+\qquad \FUNC \text{ checkWord$^A$(t, } \VALUE \text{ pre} \cdot{\seq }, \VALUE \text{ w} \cdot{\seq }, \VALUE \text{ i} \cdot{\nat}) \\
+\qquad\qquad \VALUE \text{ $b$} \cdot{} b, i, pre:[\True, b=t[pre] \And pre = w \And i=|pre|] \\
+\qquad\qquad \RETURN \text{ $b$}\\ \\
+\qquad\PROC \text{ addWord$^A$(t, } \VALUE \text{ pre} \cdot{\seq }, \VALUE \text{ w $\cdot{\seq }$, } \VALUE \text{ i} \cdot{\nat}) \\ 
+\qquad\qquad t, i, pre:[\True, \All{v \le w}{\All{v \notin D}{t[v]=\False} \And \All{v \in D}{t[v]=t[v]_0}} \\ 
+\qquad \qquad \qquad \qquad \And t[w]=\True \And pre=w \And i=|pre|]\\ \\
+\qquad\PROC \text{ delWord$^A$(t, } \VALUE \text{ pre} \cdot{\seq }, \VALUE \text{ w} \cdot{\seq }, \VALUE \text{ i} \cdot{\nat}) \\
+\qquad\qquad t, pre, i:[\True, t = t_0 : pre \mapsto \False \And pre = w \And i=|pre|] \\ \\
+\End \\
+\end{gather*}
+
+\subsection{Refinement of checkWord}
+Lets start refining the concrete data type by refining checkword.
+\begin{gather*}
+\FUNC \text{ checkWord$^A$(} \VALUE \text{ w} \cdot{\seq },  \VALUE \text{ pre} \cdot{\seq },  \VALUE \text{ i} \cdot{\nat }) \\
+\qquad \VALUE \text{ $b$} \cdot{} \nt{b, i, pre:[\True, b=t[pre] \And pre = w \And i=|pre|]}{(0)} \\
+\qquad \RETURN \text{ $b$}
+\end{gather*}
+\begin{align*}
+    \lrefstep{(0)}{if condition}{\IF \text{ w $\notin$ D } \THEN} \\
+    &\qquad \nt{b:[w\notin D, b=t[pre] \And pre = w \And i=|pre|]}{(1)} \\
+    &\ELSE \\ 
+    &\qquad \nt{b:[w\in D, b=t[pre] \And pre = w \And i=|pre|]}{(2)} \\
+    &\FI \\ \\
+    \lrefstep{(1)}{ass}{b\Ass \False} \\ \\
+    \lrefstep{(2)}{if-condition}{\IF \text{ pre=$w$ } \THEN} \\
+    &\qquad \nt{b:[w\in D \And pre=w, b=t[pre] \And pre = w \And i=|pre|]}{(3)}\\
+    &\ELSE\\
+    &\qquad \nt{b:[w\in D \And pre\ne w, b=t[pre] \And pre = w \And i=|pre|]}{(4)}\\
+    &\FI \\ \\
+    \lrefstep{(4)}{seq}{\nt{b:[w\in D \And pre\ne w, i+1=|pre| \And pre\le w]}{(5)}} \\
+    &\nt{b:[i+1=|pre| \And \text{pre$\le$ w, } i=|pre|]}{(6)} \\ 
+    &\nt{b:[\text{i=$|pre|$, } b=t[pre] \And pre = w \And i=|pre|]}{(7)} \\ \\
+    \lrefstep{(5)}{ass}{pre := pre + w[i];} \\
+    \lrefstep{(6)}{ass}{i \Ass i +1;} \\
+    \lrefstep{(7)}{function call and weaken pre}{\text{checkWord(w);}} \\ \\
+    \lrefstep{(3)}{if condition}{\IF \text{ t[pre] = $\True$ } \THEN} \\
+    &\qquad \nt{b:[t[pre] = \True \And pre=w \And \text{w $\in$ D, }  b=t[pre] \And pre = w \And i=|pre|}{(8)}\\
+    &\ELSE\\
+    &\qquad \nt{b:[t[pre] \ne \True \And pre=w \And \text{w $\in$ D, } b=t[pre] \And pre = w \And i=|pre|]}{(9)}\\ 
+    &\FI \\ \\
+    \lrefstep{(8)}{since pre=w and t[pre] = $\True$}{b\Ass\True} \\
+    \lrefstep{(9)}{since pre=w and t[pre] = $\False$}{b\Ass\False} \\
+\end{align*}
+Now to complete the refinement.
+\begin{align*}
+    &\FUNC \text{ checkWord}^A(w, pre, i) \\
+    &\qquad \IF \text{ w$\notin$ D } \THEN \\
+    &\qquad \qquad b\Ass \False; \\
+    &\qquad \ELSE \\ 
+    &\qquad \qquad \IF \text{ pre = w } \THEN \\
+    &\qquad \qquad \qquad \IF \text{ t[pre] = $\True$ } \THEN \\
+    &\qquad \qquad \qquad \qquad b\Ass \True;\\
+    &\qquad \qquad \qquad \ELSE \\
+    &\qquad \qquad \qquad \qquad b\Ass \False;\\
+    &\qquad \qquad \qquad \FI \\
+    &\qquad \qquad \ELSE \\
+    &\qquad \qquad \qquad \text{pre } := \text{ pre} + w[i]; \\
+    &\qquad \qquad \qquad i\Ass i+1; \\
+    &\qquad \qquad \qquad b := \text{ checkWord($w$, pre, $i$)};\\
+    &\qquad \qquad \FI \\
+    &\qquad \FI \\
+    &\RETURN \text{ b};
+\end{align*}
+\subsection{Refinement of addWord}
+Moving on to the refinement of addWord:
+\begin{gather*}
+    \qquad\PROC \text{ addWord$^A$(} \VALUE \text{ w $\cdot{\seq }$},  \VALUE \text{ pre $\cdot{\seq }$},  \VALUE \text{ i $\cdot{\nat }$}) \\ 
+    \qquad \qquad \VALUE \text{ $t$} \cdot{} \nt{t, i, pre:[\True, \All{v \le w}{t=t_0 : v \mapsto \False} \And t = t_0 : w \mapsto \True \And pre=w \And i=|pre|]}{(0)}
+\end{gather*}
+\begin{align*}
+    \lrefstep{(0)}{if-condition}{\IF \text{ pre = w } \THEN} \\
+    &\qquad \nt{t:[pre=w, \All{v \le w}{t=t_0 : v \mapsto \False} \And t = t_0 : w \mapsto \True \And pre=w \And i=|pre|]}{(1)}\\
+    &\ELSE\\
+    &\qquad \nt{t:[pre\ne w, \All{v \le w}{t=t_0 : v \mapsto \False} \And t = t_0 : w \mapsto \True \And \And pre=w \And i=|pre|]}{(2)}\\ \\
+    \lrefstep{(1)}{ass and with hand waving, assume $\forall v\le w. t[v]=\False$ since it is a recursive function} t[w := true] \\ \\
+    \lrefstep{(2)}{seq}{\nt{t:[pre\ne w, pre\le w \And i+1=|pre|]}{(3)}} \\
+    &\nt{t:[pre\le w \And i+1=|pre|, pre\le w \And i=|pre|]}{(4)} \\
+    &\nt{t:[pre\le w \And i=|pre|, \All{v \le pre}{t=t_0 : v \mapsto \False}]}{(5)}\\
+    &\nt{t:[\All{v \le pre}{t=t_0 : v \mapsto \False}, \All{v \le w}{t=t_0 : v \mapsto \False} \And t = t_0 : w \mapsto \True]}{(6)}\\ \\
+    \lrefstep{(3)}{ass}{\text{ pre} \Ass pre + w[i]}\\
+    \lrefstep{(4)}{ass}{i\Ass i + 1;} \\
+    \lrefstep{(5)}{ass} t[pre := false] \\
+    \lrefstep{(6)}{ass post $\subst{i+1}{i}$ and seq}{\text{addWord($w$, pre, i)}} \\
+\end{align*}
+Now to complete the refinement.
+\begin{align*}
+    &\FUNC \text{ addWord}^A(w) \\
+    &\qquad \IF \text{ pre = w } \\
+    &\qquad \qquad t[pre := true] \\
+    &\qquad \ELSE \\
+    &\qquad \qquad \text{pre = pre + w[i]} \\
+    &\qquad \qquad i = i + 1 \\
+    &\qquad \qquad t[pre := false] \\
+    &\qquad \qquad \text{addWord($w$)} \\
+    &\qquad \FI \\
+\end{align*} 
+   
+\subsection{Refinement of delWord}
+Moving on to the refinement of delWord:
+\begin{gather*}
+    \PROC \text{ delWord(}\VALUE \text{ $w$} \cdot{\seq}, \VALUE \text{ $pre$} \cdot{\seq}, \VALUE \text{ $i$} \cdot{\nat})\\
+    \qquad \nt{t, pre, i:[\True, t = t_0 : pre \mapsto \False \And pre = w \And i=|pre|]}{(0)}
+\end{gather*}
+\begin{align*}
+    \lrefstep{(0)}{if condition}{\IF \text{ w $\notin D$ } \THEN} \\
+    &\qquad \nt{t:[w \notin D, t = t_0 : pre \mapsto \False \And pre = w \And i=|pre|]}{(1)}\\
+    &\ELSE \\
+    &\qquad \nt{t:[w \in D, t = t_0 : pre \mapsto \False \And pre = w \And i=|pre|]}{(2)}\\
+    &\FI\\ \\ 
+    \lrefstep{(1)}{SKIP since element isn't in domain} \pPkey{skip;} \\ \\
+    \lrefstep{(2)}{if condition and weaken pre}{\IF \text{ pre = w } \THEN} \\
+    &\qquad \nt{t:[\text{pre=w, } t = t_0 : pre \mapsto \False \And pre = w \And i=|pre|]}{(3)}\\
+    &\ELSE \\
+    &\qquad \nt{t:[\text{pre$\ne$w, }t = t_0 : pre \mapsto \False \And pre = w \And i=|pre|]}{(4)}\\
+    &\FI\\ \\ 
+    \lrefstep{(3)}{ass} t[pre := false] \\
+    \lrefstep{(4)}{seq}{\nt{t:[\text{pre$\ne$w, }  i+1=|pre| \And pre\le w]}{(5)}}\\
+    &\nt{t:[pre\le w \And \text{ i+1=$|pre|$, } i=|pre|]}{(6)}\\
+    &\nt{t:[\text{ i=$|pre|$, } t[pre]=false \And pre = w \And i=|pre|]}{(7)}\\ \\
+    \lrefstep{(5)}{ass} pre \Ass pre + w[i]\\
+    \lrefstep{(6)}{ass} i = i + 1 \\
+    \lrefstep{(7)}{weaken pre and function call} \text{delWord($w$, pre, $i$)} \\
+\end{align*} 
+Now to complete the refinement.
+\begin{align*}
+    &\FUNC \text { delWord}^A(w, pre, i) \\
+    &\qquad \IF \text{ w$\notin$ D } \THEN \\
+    &\qquad \qquad \pPkey{skip;}\\
+    &\qquad \ELSE \\
+    &\qquad \qquad \IF \text{ pre = w } \\
+    &\qquad \qquad \qquad t[pre := false]; \\
+    &\qquad \qquad \ELSE \\
+    &\qquad \qquad \qquad \text{pre = pre[i] + w[i]}; \\
+    &\qquad \qquad \qquad i = i + 1; \\
+    &\qquad \qquad \qquad \text{delWord($w$, pre, $i$)}; \\
+    &\qquad \qquad \FI \\
+    &\qquad \FI \\
+\end{align*} 
+
+\subsection{Proof obligations}
+We begin to list the relevant proof obligations. Note that the coupling invariant r is replaced by an equivalent mapping function f, that creates an abstract data type w from a given concrete data type t.
+\begin{align*}
+    &\text{init}^A \Implies \text{init} \subst{f(t)}{w} &(2_f)\\
+    &\text{pre}_j \subst{f(t)}{w}\Implies \text{pre}^A_j \text{ , for j$\in$J} &(3_f)\\
+    &\text{pre}_j\subst{f(t_0), x_0}{w_0, x} \And \text{post}^A_j\Implies \text{post}_j \subst{f(t_0), f(t)}{w_0, w} \text{ , for j$\in$J} &(4_f) \\
+    &\All{t}{\Exi{w}{f(t)=w}} \text{, if } \Exi{j, t}{\NOT \text{pre}^A_j} &(5_f)
+\end{align*}
+Begin with addressing the 1st proof obligation ($2_f$). 
+\begin{align*}
+    &\text{init}^A \Implies \text{init} \subst{f(c)}{a} \\
+    \justification{definition of init$^A$ and init} 
+    & t:={\epsilon \mapsto \False} \Implies f(t)=\{\}
+\end{align*}
+Next, consider 5$_f$. This falls since f is a total function, therefore satisfying the condition. \\ \\
+Next prove 3$_f$ for all operations of DICT$^A$. Yet, all the preconditions of the operation are true, this falls immediately. \\ \\
+To begin with the proof obligations for 4$_f$ first add all relevant variables to the frame and add zero sub scripted variables to them. \\ \\
+
+Begin with the operation checkWord
+\begin{align*}
+    &\text{pre}_j\subst{f(t_0), x_0}{w_0, x} \And \text{post}^A_j \\
+    \justification{definition of LHS} 
+    &\True \subst{f(t_0), x_0}{w_0, x} \And b=t[pre] \And pre = w \And i=|pre| \And w,t=w_0,t_0 \\
+    \justification[\Implies]{since pre=$w$}
+    & b=t[w]\\
+    \justification{comparison between function mapping and set belonging}
+    & b=(w\in f[t]) \\
+    \justification{The definition of the RHS}
+    &\text{post}_j \subst{f(t_0), f(t)}{w_0, w}  \\
+\end{align*}
+
+Now check the condition with delWord
+\begin{align*}
+    &\text{pre}_j\subst{f(t_0), x_0}{w_0, x} \And \text{post}^A_j \\
+    \justification{definition of LHS} 
+    &\True \subst{f(t_0), x_0}{w_0, x} \And t = t_0 : pre \mapsto \False \And pre = w \And i=|pre|\\
+    \justification[\Implies]{since pre=$w$}
+    & t=t_0 : w \mapsto \False\\
+    \justification{comparison between function mapping and set minus}
+    & f(t)=f(t_0) \setminus \{ w \} \\
+    \justification{The definition of the RHS}
+    &\text{post}_j \subst{f(t_0), f(t)}{w_0, w} \\
+\end{align*}
+
+For addWord we prove
+\begin{align*}
+    &\text{pre}_j\subst{f(t_0), x_0}{w_0, x} \And \text{post}^A_j \\
+    \justification{definition of LHS} 
+    &\True \subst{f(t_0), x_0}{w_0, x} \And \\ 
+    &\All{v \le w}{\All{v \notin D}{t[v]=\False} \And \All{v \in D}{t[v]=t[v]_0}} \\
+    &\And t[w]=\True \And w=w_0\\
+    \justification[\Implies]{since pre=$w$ and we aren't changing other function mappings except the ones we add}
+    & t = t_0: w \mapsto =-\True\\
+    \justification{comparison between function mappings and set union}
+    & f(t)=f(t_0) \cup w \\
+    \justification{The definition of the RHS}
+    &\text{post}_j \subst{f(t_0), f(t)}{w_0, w} \\
+\end{align*}
+\section{ Translation to C code }
+\subsection{Explanation of translation}
+While we have tried to keep the C code as similar to the toy language code as possible, there were a few changes that had to be made in the conversion. \\ 
+
+The most obvious change that has been made is the use of struct in the C code instead of a trie function and domain. In the C code, the Dict struct has a field eow, which is a Boolean identifier for the end of a word. This essentially mimics the trie function within our toy language, which would provide a mapping to a boolean (true, false) for each element of the trie domain. Since each Node in the C implementation represents the end of a prefix, the eow boolean takes the place of the trie function, which will also map each word to a given boolean.\\
+
+Another change is the use of an array of Dict structs in place of the trie domain. In our toy language, each prefix of a word w is contained within the domain as it's own separate entity. This was done explicitly to avoid the use of nodes, which the toy language does not support. In the C code, each Node (Dict) down the tree would represent an element within the trie domain of the toy language. As a result, the recursive function calls in the toy language functions have been retained in the c code, however instead of iterating through the sequence $pre$, we are traversing through the tree Nodes. \\
+
+Our C functions also differ from the toy language functions in the way they look through strings. In the toy language, we have a variable $i$ that keeps track of our position within the sequence of chars we are looking at. In the C code, instead of using a variable i to track our position within the string, we pass the string into the next recursive call starting at our current position. Since we are able to achieve this without holding onto this extra variable $i$ in the C code, then we get the same result from using this method. As a consequence the variable pre and i in the parameters of the toy language operations, have become obsolete.\\ 
+
+Similarly to this, checking if $ pre = pre + w[i]$ in the toy language code is equivalent to checking $strlen(w)$ in our C code. Both are checking whether we have reached the end of the word we are checking/adding/deleting, with the C code using a library function to achieve this same task. This is due to string comparison in C being much less simple than in the toy language. \\
+
+Finally, we moved the check for whether w is in D, in the c code to after the first if condition in its relative positions in delWord and checkWord. This was mostly an aesthetic change. 
+\subsection{Derived C source code}
+\lstinputlisting{dict.c}
+
+\end{document}

@@ -1,0 +1,348 @@
+\documentclass [a4paper, 12pt, fleqn]  {article}
+\usepackage[utf8]{inputenc}
+\usepackage{2111defs2}
+\usepackage{listings}
+
+\newcommand{\assn}[1]{{\color{red}\left\{#1\right\}}}
+\newcommand{\remark}[1]{{\sffamily\color{blue}{#1}}}
+
+\title{COMP2111 - Assignment 1}
+\author{z5162498 - Bailey Ivancic}
+\date{April, 2018}
+
+
+\begin{document}
+\maketitle
+\section{Task 1}
+\label{sec:task-1}
+
+The task for this assignment is to specify and subsequently implement a simplified version of the unix \textit{uniq} command.
+\\~\\
+The task has the following requirements:
+\begin{itemize}
+	\item An array of strings \textbf{a} contains a number of elements \textbf{n}
+	\item Output is stored in array of strings \textbf{b}. Output is the same as \textbf{a}, but with adjacent identical strings collapsed into one
+	\item The number of strings in \textbf{b} is stored in variable \textbf{k}
+	\item Array \textbf{a} should not be changed, along with the number of items in \textbf{a} (\textbf{n})
+\end{itemize}
+
+Making these requirements into a program specification, we get the precondition:
+\begin{gather*}
+  (n \geq 0) \hspace{0.1cm} \AND
+  (a[n] = 0) \hspace{0.1cm} \\
+\end{gather*}
+
+% Other bit of pre -  ( \exists a[ ][ ] \hspace{0.1cm} such that \hspace{0.1cm} \forall d  \in (0..(n-1)),
+  	 %\hspace{0.1cm} \exists j  \hspace{0.1cm} such that  \hspace{0.1cm} a[d][j] = 0  \hspace{0.1cm} \AND \hspace{0.1cm} \forall h
+  	 %\in (0..(j-1)) \hspace{0.1cm} a[d][h] \neq 0) 
+
+stating that array \textbf a needs to be a 2D array, with the final element of the array being the null character. 
+\\~\\
+From the spec, it can be assumed that all strings provided will be null-terminated, and as such do not form part of the precondition. 
+\newpage
+and the postcondition:
+\begin{gather*}
+  \forall i < n, \hspace{0.1cm} a[i] = b[m(i)], \\
+  where \hspace{0.1cm} m: \nat \functo \nat: \\
+   \hspace{0.7cm} \forall i < n, \exists r \leq k \hspace{0.1cm} such that \hspace{0.1cm} (b[r] = a[i] \AND (\forall k \in \nat, \hspace{0.1cm} a[i] = a[i+j] \implies k = i)
+\end{gather*}
+
+stating that for any index i in a, there exists an index k in b such that b[k] = a[i]. Additionally, if a[i] = a[i + \textit{some natural number}], then k = i.
+
+\newpage
+\section{Task 2}
+\label{sec:task-2}
+We first begin with defining a proof outline for the main program, running under the assumption that strcmp and strcpy are built-in toy-language features. This is done to derive the Invariant and assertions for the main program before bringing in the other functions.
+
+\textit{\textbf{Main:}}
+\begin {gather*}
+\assn{ n \geq 0 \AND a[n] = 0   } \\
+\assn{  I \subst 0 {temp}   } \\
+temp \Ass 0; \\
+\assn {  I \subst 0i  } \\
+i \Ass 0; \\
+\assn {  I \subst 0k  } \\
+k \Ass 0; \\
+\assn{ I } \\
+\WHILE ~ i < n ~ \DO \\
+\hspace{0.6cm} \assn{  I \AND i < n  } \\
+\hspace{0.6cm} \IF \hspace{0.3cm} \neg strcmp(a[i], temp) \hspace{0.1cm} \textit{(1)} \\
+\hspace{1.2cm} \assn{ I \AND a[i] = temp  } \\
+\hspace{1.2cm} \assn {   I \subst {i + 1} i \subst {k + 1} k \subst {a[i]} {b[k]}    } \\
+\hspace{1.2cm} strcpy (b[k], a[i]); \hspace{0.1cm} \textit{(2)} \\
+\hspace{1.2cm} \assn{  I \subst {i + 1} i \subst {a[i]} { temp }   } \\
+\hspace{1.2cm} strcpy (temp, a[i]); \hspace{0.1cm} \textit{(3)}\\
+\hspace{1.2cm} \assn{  I \subst {k + 1} k } \\
+\hspace{1.2cm} k \Ass k + 1; \\
+\hspace{0.6cm} \FI \\
+\hspace{0.6cm} \assn{  I \subst {i + 1 } i } \\
+\hspace{0.6cm} i \Ass i + 1; \\
+\assn{  I } \\
+\OD \\
+\assn {  I \AND i \geq n   } \\
+\assn {  \forall i < n, a[i] = b[m(i)]  } \\
+\end{gather*}
+\\
+
+From looking at the proof outline, the following invariant \textit{\textbf{I}}  can be derived:
+
+\begin{gather*}
+I = {n = n_0 \AND a = a_0 \AND k \leq i} \\
+\end{gather*}
+
+Stating that \textit{\textbf{n}} can never be changed from its original value, the array \textit{\textbf{a}} is never changed, and \textit{\textbf{k}} must be $\leq$ to \textit{\textbf{i}}, since it is only incrememnted when \textit{\textbf{i}} is incremented, and in some iterations never incremented at all. 
+\\~\\
+Following this, we provide proof outlines for the toy-language variants of strcmp and strcpy. There is two versions of strpy, which deal with different arrays, and these are included below as indicated in the main program. This is in order to determine the invariants for each.
+
+
+\textit{\textbf{strcmp(1):}}
+\begin{gather*}
+\assn{ I \AND i < n } \\
+\assn{ Q \subst 0j  } \\
+j \Ass 0; \\
+\assn{  Q \subst {true} {same}  } \\
+same \Ass true; \\
+\assn{  I \AND Q} \\
+\WHILE ~ a[i][j] \neq 0 \AND temp[j] \neq 0 \hspace{0.1cm} \DO \\
+\hspace{0.6cm} \assn{ Q \AND I \AND a[i][j] \neq 0 \AND temp[j] \neq 0  } \\
+\hspace{0.6cm} \IF \hspace{0.1cm} a[i][j] \neq temp[j] \\
+\hspace{1.2cm} \assn {Q \AND I \AND a[i][j] \neq temp[j]} \\
+\hspace{1.2cm} \assn{  Q \subst {false} {same} } \\
+\hspace{1.2cm} same \Ass false; \\
+\hspace{0.6cm} \FI \\
+\hspace{0.6cm} \assn{ Q \subst {j + 1} j  } \\
+\hspace{0.6cm} j \Ass j + 1; \\
+\hspace{0.6cm} \assn {I \AND Q} \\
+\OD \\
+\assn{  a[i][j] = 0 \OR temp[j] = 0   } \\
+\IF \hspace{0.1cm} a[i][j] \neq 0 \OR temp[j] \neq 0; \\
+\hspace{0.6cm} \assn{  I \AND Q \AND (a[i][j] \neq 0 \OR temp[j] \neq 0)  } \\
+\hspace{0.6cm} \assn{ Q \subst {false} {same} } \\
+\hspace{0.6cm} same \Ass false; \\
+\FI \\
+\assn{ I \AND Q \AND i < n  } \\
+\end{gather*}
+
+
+
+\textit{\textbf{strcpy(2):}}
+\begin{gather*}
+\assn{I \AND i < n} \\
+\assn{F \subst 0w}\\
+w \Ass 0; \\
+\assn{I \AND F} \\
+\WHILE \hspace{0.1cm} a[i][w] \neq 0 \hspace{0.1cm} \DO \\
+\hspace{0.6cm} \assn{I \AND F \AND a[i][w] \neq 0 }\\
+\hspace{0.6cm} \assn{F \subst {w + 1} w \subst{ a:i \mapsto w \mapsto b[k][w]}  a    } \\
+\hspace{0.6cm} b[k][w] \Ass a[i][w]; \\
+\hspace{0.6cm} \assn{ F \subst {w + 1} w  } \\
+\hspace{0.6cm} w \Ass w + 1; \\
+\hspace{0.6cm} \assn{ I \AND F} \\
+\OD \\
+\assn{ I \AND F \AND  a[i][w] = 0 } \\
+\assn{ F \subst {b: k \mapsto w \mapsto 0} b   } \\
+b[k][w] \Ass 0; \\
+\assn{I \AND F \AND i < n} \\
+\assn{ \forall w \in \nat , b[k][w] = a[i][w]    } \\
+\end{gather*}
+
+
+
+\textit{\textbf{strcpy(3):}}
+\begin{gather*}
+\assn{I \AND i < n} \\
+\assn{a \subst 0r} \\
+r \Ass 0; \\
+\assn{I \AND G} \\
+\WHILE \hspace{0.1cm} a[i][r] \neq 0 \hspace{0.1cm} \DO \\
+\hspace{0.6cm} \assn{I \AND G \AND a[i][r] \neq 0} \\
+\hspace{0.6cm} \assn{G \subst {r + 1} r \subst {temp:r \mapsto a[i][r]}{temp}} \\
+\hspace{0.6cm} temp[r] \Ass a[i][r]; \\
+\hspace{0.6cm} \assn{G \subst {r + 1}  {r}   } \\
+\hspace{0.6cm} r \Ass r + 1; \\
+\hspace{0.6cm} \assn{I \AND G} \\
+\OD \\
+\assn{I \AND G \AND a[i][r] = 0} \\
+\assn{G \subst {temp:  r \mapsto 0}  {temp}  } \\
+temp[r] \Ass 0; \\
+\assn{I \AND G \AND i < n} \\
+\assn{ \forall r \in \nat , temp[r] = a[i][r] } \\
+\end{gather*}
+
+From these proof outlines, we can see that the invariants for each function are:
+\begin{gather*}
+Q = (I \AND a[i] \neq 0 \AND \forall f \in (0 .. (j)),  a[i][f] \neq temp[f] \implies \neg same) \\
+F = (I \AND a[i] \neq 0 \AND \forall f \in (0..(w)), b[k][f] = a[i][f]) \\
+G = (I \AND a[i] \neq 0 \AND \forall f \in (0..(r)), temp[f] = a[i][f])
+\end{gather*}
+
+As such, we can simply use the invariant \textit{\textbf{Q}} to denote the invariants for all three embedded loops. We then propose the proof outline for the whole toy-language program together, with strcmp and strcpy included.
+
+\textit{\textbf{Complete:}}
+\begin{gather*}
+\assn{ n \geq 0 \AND a[n] = 0   } \\
+\assn{  I \subst 0k \subst 0i \subst 0 {temp}   } \\
+temp \Ass 0; \\
+\assn {  I \subst 0k \subst 0i  } \\
+i \Ass 0; \\
+\assn {  I \subst 0k  } \\
+k \Ass 0; \\
+\assn{ I } \\
+\WHILE ~ i < n ~ \DO \\
+\hspace{0.6cm} //Start \hspace{0.2cm} of \hspace{0.2cm} strcmp \textit{(1)} \\ % Start of strcmp (1)
+\hspace{0.6cm} \assn{ I \AND i < n } \\
+\hspace{0.6cm} \assn{ Q \subst {true} {same} \subst 0j  } \\
+\hspace{0.6cm} j \Ass 0; \\
+\hspace{0.6cm} \assn{  Q \subst {true} {same}  } \\
+\hspace{0.6cm} same \Ass true; \\
+\hspace{0.6cm} \assn{  I \AND Q} \\
+\hspace{0.6cm} \WHILE ~ a[i][j] \neq 0 \AND temp[j] \neq 0 \hspace{0.1cm} \DO \\
+\hspace{1.2cm} \assn{ Q \AND I \AND a[i][j] \neq 0 \AND temp[j] \neq 0  } \\
+\hspace{0.6cm} \hspace{0.6cm} \IF \hspace{0.1cm} a[i][j] \neq temp[j] \\
+\hspace{0.6cm} \hspace{1.2cm} \assn {Q \AND I \AND a[i][j] \neq temp[j]} \\
+\hspace{0.6cm} \hspace{1.2cm} \assn{  Q \subst {false} {same} } \\
+\hspace{0.6cm} \hspace{1.2cm} same \Ass false; \\
+\hspace{0.6cm} \hspace{0.6cm} \FI \\
+\hspace{0.6cm} \hspace{0.6cm} \assn{ Q \subst {j + 1} j  } \\
+\hspace{0.6cm} \hspace{0.6cm} j \Ass j + 1; \\
+\hspace{0.6cm} \hspace{0.6cm} \assn {I \AND Q} \\
+\hspace{0.6cm} \OD \\
+\hspace{0.6cm} \assn{  a[i][j] = 0 \OR temp[j] = 0   } \\
+\hspace{0.6cm} \IF \hspace{0.1cm} a[i][j] \neq 0 \OR temp[j] \neq 0; \\
+\hspace{0.6cm} \hspace{0.6cm} \assn{  I \AND Q \AND (a[i][j] \neq 0 \OR temp[j] \neq 0)  } \\
+\hspace{0.6cm} \hspace{0.6cm} \assn{ Q \subst {false} {same} } \\
+\hspace{0.6cm} \hspace{0.6cm} same \Ass false; \\
+\hspace{0.6cm} \FI \\
+\hspace{0.6cm} \assn{ I \AND Q \AND i < n  } \\
+\hspace{0.6cm} // End \hspace{0.2cm} of \hspace{0.2cm} strcmp \textit{(1)} \\ % End of strcmp (1)
+\end{gather*}
+
+\begin{gather*}
+\hspace{0.6cm} \IF \hspace{0.3cm} \neg same \hspace{0.1cm} \textit{(1)} \\
+\hspace{1.2cm} \assn{ I \AND a[i] \neq temp  } \\ \\
+\hspace{1.2cm} //Start \hspace{0.2cm} of \hspace{0.2cm} strcpy \textit{(2)} \\  % Start of strcpy (2)
+\hspace{1.2cm} \assn{F \subst 0w}\\
+\hspace{1.2cm} w \Ass 0; \\
+\hspace{1.2cm} \assn{I \AND F} \\
+\hspace{1.2cm} \WHILE \hspace{0.1cm} a[i][w] \neq 0 \hspace{0.1cm} \DO \\
+\hspace{1.2cm} \hspace{0.6cm} \assn{I \AND F \AND a[i][w] \neq 0 }\\
+\hspace{1.2cm} \hspace{0.6cm} \assn{F \subst {w + 1} w \subst{ b:k \mapsto w \mapsto a[i][w]}  b    } \\
+\hspace{1.2cm} \hspace{0.6cm} b[k][w] \Ass a[i][w]; \\
+\hspace{1.2cm} \hspace{0.6cm} \assn{ F \subst {w + 1} w  } \\
+\hspace{1.2cm} \hspace{0.6cm} w \Ass w + 1; \\
+\hspace{1.2cm} \hspace{0.6cm} \assn{ I \AND F} \\
+\hspace{1.2cm} \OD \\
+\hspace{1.2cm} \assn{ I \AND F \AND  a[i][w] = 0 } \\
+\hspace{1.2cm} \assn{ F \subst {b: k \mapsto w \mapsto 0} b   } \\
+\hspace{1.2cm} b[k][w] \Ass 0; \\
+\hspace{1.2cm} \assn{I \AND F \AND i < n} \\
+\hspace{1.2cm} //End \hspace{0.2cm} of \hspace{0.2cm} strcpy \textit{(2)} \\  \\% End of strcpy (2)
+\end{gather*}
+
+\begin{gather*}
+\hspace{1.2cm} //Start \hspace{0.2cm} of \hspace{0.2cm} strcpy \textit{(3)} \\  % Start of strcpy (3)
+\hspace{1.2cm} \assn{G \subst 0r} \\
+\hspace{1.2cm} r \Ass 0; \\
+\hspace{1.2cm} \assn{I \AND G} \\
+\hspace{1.2cm} \WHILE \hspace{0.1cm} a[i][r] \neq 0 \hspace{0.1cm} \DO \\
+\hspace{1.2cm} \hspace{0.6cm} \assn{I \AND G \AND a[i][r] \neq 0} \\
+\hspace{1.2cm} \hspace{0.6cm} \assn{G \subst {r + 1} r \subst {temp:r \mapsto a[i][r]}{temp}} \\
+\hspace{1.2cm} \hspace{0.6cm} temp[r] \Ass a[i][r]; \\
+\hspace{1.2cm} \hspace{0.6cm} \assn{G \subst {r + 1}  {r}   } \\
+\hspace{1.2cm} \hspace{0.6cm} r \Ass r + 1; \\
+\hspace{1.2cm} \hspace{0.6cm} \assn{I \AND G} \\
+\hspace{1.2cm} \OD \\
+\hspace{1.2cm} \assn{I \AND G \AND a[i][r] = 0} \\
+\hspace{1.2cm} \assn{G \subst {temp: r \mapsto 0}  {temp}  } \\
+\hspace{1.2cm} temp[r] \Ass 0; \\
+\hspace{1.2cm} \assn{I \AND G \AND i < n} \\
+\hspace{1.2cm} //End \hspace{0.2cm} of \hspace{0.2cm} strcpy \textit{(3)} \\ \\ % Start of strcpy (3)
+\hspace{1.2cm} \assn{  I \subst {k + 1} k } \\
+\hspace{1.2cm} k \Ass k + 1; \\
+\hspace{0.6cm} \FI \\
+\hspace{0.6cm} \assn{  I \subst {i + 1 } i } \\
+\hspace{0.6cm} i \Ass i + 1; \\
+\assn{  I } \\
+\OD \\
+\assn {  I \AND i \geq n   } \\
+\assn {  \forall i < n, a[i] = b[m(i)]  } \\
+\end{gather*}
+\newpage
+
+\textit{\textbf{Implications}} \\
+\subsection{First implication: $ n \geq 0 \AND a[n] = 0 \implies I \subst 0 {temp}   $} 
+ $ n \geq 0 \AND a[n] = 0 \implies n = n_0 \AND a = a_0 \AND k \leq i $ \\
+\remark{ n and a have not been changed thus far in the program, as such they can be assumed true} \\
+$ n \geq 0 \AND a[n] = 0 \implies k \leq 1 \AND true $ \\
+$ n \geq 0 \AND a[n] = 0 \implies 0 \leq 1 $ \\
+$ n \geq 0 \AND a[n] = 0 \implies true $ \\
+\remark{ Therefore, implication is proved true} \\
+
+\subsection{Second implication: $  I \AND i < n \implies Q \subst 0j $}
+$ n = n_0 \AND a = a_a \AND k \leq i \AND i < n \implies I \AND a[i] \neq 0 \AND \forall f \in (0 .. j), a[i][f] \neq temp[f] \implies \neg same $  \\
+\remark{ Expand both LHS and RHS  } \\
+$ i < n \implies a[i] \neq 0 \AND \forall f \in (0..j), a[i][f] \neq temp[f] \implies \neg same $  \\
+\remark{ array a[n] = 0, but we state that i < n. Therefore a[i] $ \neq $ 0} \\
+$ true \implies a[i] \neq 0 \AND \forall f \in (0..j), a[i][f] \neq temp[f] \implies \neg same $  \\
+
+\subsection{Third implication: $ Q \AND I \AND a[i][j] \neq temp[j] \implies Q \subst {false} {same}$}
+$ I \AND  a[i] \neq 0 \AND (\forall f \in (0..j), a[i][f] \neq temp[f] \implies \neg same) \AND (a[i][j] \neq temp[j]) \implies I \AND a[i] \neq 0 \AND \forall f \in (0..j), a[i][f] \neq temp[f] \implies true  $ \\
+\remark {  Expand both LHS and RHS, while making substitution of false for same on RHS. As such, the rightmost implication becomes true. } \\
+$(\forall f \in (0..j), a[i][f] \neq temp[f] \implies \neg same) \AND (a[i][j] \neq temp[j]) \implies \forall f \in (0..j), a[i][f] \neq temp[f] \implies true  $ \\
+\remark{  Since I and a[i] $\neq$ 0 appear on both sides, they can be made true on both, cancelling them out.  } \\
+$(\forall f \in (0..j), a[i][f] \neq temp[f] \implies \neg same) \AND (a[i][j] \neq temp[j]) \implies true $ \\
+\remark { Since the first portion of the RHS implied true, this means the entire RHS is true} \\
+\remark{ Thus, since the RHS of the conditional statement is true, the entire implication is true } 
+\newpage
+
+\subsection{Fourth implication: $ I \AND Q \AND (a[i][j] \neq 0 \OR temp[j] \neq 0 \implies Q\subst {false}{same}$}
+$  I \AND I \AND a[i] \neq 0 \AND \forall \in (0..j), a[i][f] \neq temp[f] \implies \neg same \implies I \AND a[i] \neq 0 \AND \forall f ]in (0..j), a[i][f] \neq temp[f] \implies \neg false  $ \\
+\remark{ Expanding out the LHS and RHS, and substituting in false for same} \\
+$  I \AND a[i] \neq 0 \AND \forall f \in (0..j), a[i][f] \neq temp[f] \implies \neg same \implies I \AND a[i] \neq 0 \AND \forall f ]in (0..j), a[i][f] \neq temp[f] \implies \neg false  $ \\
+\remark{ I $\AND$ I = I } \\
+$  I \AND a[i] \neq 0 \AND \forall f \in (0..j), a[i][f] \neq temp[f] \implies \neg same \implies I \AND a[i] \neq 0 \AND \forall f ]in (0..j), a[i][f] \neq temp[f] \implies true  $ \\
+$ ( I \AND a[i] \neq 0 \AND \forall f \in (0..j), a[i][f] \neq temp[f] \implies \neg same) \implies true  $ \\
+\remark { Since the implication in the RHS formulated to true, the RHS is, by extension true.} \\
+\remark{ As a result, the entire implication is true.  } \\
+
+\subsection{Fifth implication: $ I \AND F \AND a[i][w] \neq 0 \implies F \subst {w + 1} w \subst {b: k -> w -> a[i][w]} b  $}
+RHS = $  I \AND (a[i] \neq 0) \AND (\forall f \in (0..(w + 1)), a[k][f] = a[k][f])  $ \\
+\remark{  Expanded the RHS, and performed two substitutions  } \\
+RHS = $  I \AND (a[i] \neq 0) \AND true $ \\
+\remark{ Last part of the RHS is vacuously true  } \\
+$  I \AND F \AND a[i][w] \neq 0 \implies  I \AND  a[i][w] \neq 0 $ \\
+\remark{ Removing the true to show the remaining elements  } \\
+$  F \AND true \implies  true $ \\
+\remark{  Remaining elements on RHS also appear on LHS, and so RHS becomes true  } \\
+\remark{  As a result, the entire implcation is true.   } \\
+
+\subsection{Fifth implication: $ I \AND F \AND a[i][w] \neq 0 \implies F \subst {b: k -> w -> 0} b  $}
+LHS = $ I \AND a[i] \neq 0 \AND (\forall f \in (0..w), a[k][f] = a[k][f]) \AND b[k][w] = 0 $ \\
+RHS = $  I \AND a[i] \neq 0 \AND (\forall f \in (0..w), a[k][f] = a[k][f]) $ \\
+\remark { Expanded both the LHS and RHS to show similar items} \\
+$ a[i][w] = 0 \AND true \implies b[k][w] = 0 \AND true $ \\
+\remark { Removed common elements from both sides} \\
+\remark {  Since in F b[k][w] = a[i][w], a[i][w] = 0 does imply that b[k][w] = 0. Therefore, the implication is true  } \\
+
+\subsection{Sixth implication: $ I \AND G \AND a[i][r] \neq 0 \implies G \subst {temp: r ->  0} {temp} $}
+RHS = $ I \AND a[i] \neq 0 \AND (\forall f \in (0..r), temp[f] = a[i][f]) \AND temp[r] = 0 $ \\
+LHS = $ I \AND I \AND a[i] \neq 0 \AND (\forall f \in (0..r), temp[f] = a[i][f]) \AND a[i][r] = 0$ \\
+\remark{  Expand out both LHS and RHS  } \\
+$ true \AND a[i][r] = 0 \implies true \AND temp[r] = 0 $ \\
+\remark { Removed common elements from both sides  } \\
+$ a[i][r] = 0 \implies temp[r] = 0 $ \\
+\remark{ Since in G temp[f] = a[i][f] and both indexes are set to r, this implication is therefore true} \\
+
+\newpage
+
+\section{Task 3}
+\label{sec:task-3}
+
+\lstinputlisting{uniq.c}
+
+In the C program, the control structures have been kept as close to the toy language as possible to prevent ambiguity. The structure has been kept the same as the toy language program, with the while loops for the strcmp() and strcpy() being put inside the larger while loop to prevent function calls, since these are not a part of the toy langauge. \\
+The string \textit{temp} has been defined with an arbitrary space defined as \textbf{MAXCHAR}, to ensure it would be large enough to accomodate any strings that are read into it. This arbitrarily large number will not affect the program functionality/correctness, as all strings are null terminated, thus meaning any extra space will not be used. 
+
+% \All{k\in0..(n-1)}{b[a_0[k]]=k}
+
+\end{document}

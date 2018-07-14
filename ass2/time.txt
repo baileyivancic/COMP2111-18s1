@@ -1,0 +1,17 @@
+// user times recorded from Unix "time" command
+// n size | time recorded (seconds)
+
+// Emirps from 10 - 9000 are verified to be correct
+10      0.000
+100     0.000
+500     0.000
+1000    0.012
+2000    0.024
+5000    0.080
+9000    0.212
+
+// Emirps from 50 000 - 800 000 likely to be correct, but are not verified
+50 000      13.156
+100 000     22.404
+500 000     3m 21.360s
+800 000     4m 18.584s
